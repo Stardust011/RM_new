@@ -17,25 +17,17 @@ int precheck() {
         // 结束所有程序
         exit(EXIT_FAILURE);
     }
-    if (!testCamera()) {
-        exit(EXIT_FAILURE);
-    }
     return 0;
 }
 
 int main()
 {
-    std::thread thread3(displayStatus);
-    if (DEVELOPE) {
-        std::cout << "DEVELOPE" << std::endl;
-    } else {
-        std::cout << "RELEASE" << std::endl;
-        precheck();
-    }
+    precheck();
+    std::thread thread1(displayStatus);
     testCamera();
     Camera_Init();
-    std::thread thread1(serialSendEntry);
-    std::thread thread2(Discern_run);
+    std::thread thread2(serialSendEntry);
+    std::thread thread3(Discern_run);
 
     // 确保在程序结束前等待线程完成
     thread1.join();

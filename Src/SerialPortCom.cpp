@@ -15,6 +15,8 @@ auto serial_databits = config["serial_port"]["bytesize"].as<int>();
 auto serial_parity = config["serial_port"]["parity"].as<char>();
 
 WzSerialPortPlus serialPort;
+// 初始化数据结构
+serialData serical_data;
 
 // Init serial port
 bool serialInit() {
@@ -42,37 +44,37 @@ static unsigned short crc16(const unsigned char* data_p, unsigned char length){
 }
 
 // Send data to serial port
-bool serialSend(const char *data) {
-    bool ret = serialPort.send((char *) &data, sizeof(data));
-    return ret;
-}
+
 
 // Close serial port
 void serialClose() {
     serialPort.close();
 }
 
-// 初始化数据结构
-serialData serical_data;
-
 // 通过函数修改数据
 void setSerialData(double x, double y) {
-    int x_2_send = (int)x*100;
-    int y_2_send = (int)y*100;
+    int x_2_send = (int)(x*100);
+    int y_2_send = (int)(y*100);
     serical_data.data.x = x_2_send;
     serical_data.data.y = y_2_send;
+    // 设置状态
     setSerialSend(x_2_send,y_2_send);
     serical_data.crc[0] = (unsigned char) (crc16((unsigned char *) &serical_data.data, sizeof(serical_data.data)) >> 8);
     serical_data.crc[1] = (unsigned char) (crc16((unsigned char *) &serical_data.data, sizeof(serical_data.data)) & 0xFF);
 }
 
+void setCmdStatus(unsigned char cmd) {
+    serical_data.cmd = cmd;
+}
+
 // 串口发送函数入口（多线程）
-void serialSendEntry() {
+[[noreturn]] void serialSendEntry() {
     serialInit();
     // sleep(5);
     while (true) {
-        serialSend((char *) &serical_data);
+        serialPort.send((char *) &serical_data, sizeof(serical_data));
         // std::cout << "Serial port send: " << serical_data.data.x << " " << serical_data.data.y << std::endl;
         setSerialStatus("Sending...");
+        setSendDataPreview((char *) &serical_data, sizeof(serical_data));
     }
 }

@@ -1,11 +1,11 @@
 camera:
     resolution: 1080
     frame_rate: 30
-    device: /dev/video0
+    device: ../Video/test.mp4
     exposure: auto
 
 serial_port:
-    path: /dev/ttyS0
+    path: /dev/pts/8
     baudrate: 115200
     stopbits: 1
     bytesize: 8

@@ -10,7 +10,7 @@
 
 bool serialInit();
 static unsigned short crc16(const unsigned char* data_p, unsigned char length);
-bool serialSend(const char *data);
+bool serialSend(const char *data, int length);
 void serialClose();
 
 
@@ -24,7 +24,7 @@ struct pos_data {
 };
 
 struct serialData {
-    unsigned char head{0xAA};
+    unsigned char head{0x40};
     // unsigned char id{0x01};
     unsigned char cmd{0x01};
     unsigned int length{20};
@@ -33,6 +33,7 @@ struct serialData {
     unsigned char end[2]{0x0D, 0x0A};
 };
 
+void setCmdStatus(unsigned char cmd);
 void setSerialData(double x, double y);
 void serialSendEntry();
 

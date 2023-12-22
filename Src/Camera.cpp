@@ -14,42 +14,43 @@
 auto device = config["camera"]["device"].as<std::string>();
 auto exposure = config["camera"]["exposure"].as<std::string>();
 
-cv::VideoCapture cap;
+cv::VideoCapture cap_test;
 
 void Camera_Init() {
     // Open the camera device
-    cap.open(device);
+    cap_test.open(device);
 
     // Set the camera parameters
     // cap.set(cv::CAP_PROP_FRAME_WIDTH, resolution);
     // cap.set(cv::CAP_PROP_FRAME_HEIGHT, resolution);
     // cap.set(cv::CAP_PROP_FPS, frame_rate);
     if (exposure == "auto") {
-        cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+        cap_test.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
     } else {
-        cap.set(cv::CAP_PROP_AUTO_EXPOSURE, 0);
-        cap.set(cv::CAP_PROP_EXPOSURE, std::stoi(exposure));
+        cap_test.set(cv::CAP_PROP_AUTO_EXPOSURE, 0);
+        cap_test.set(cv::CAP_PROP_EXPOSURE, std::stoi(exposure));
     }
-    cap.release();
+    setCameraExposure(exposure);
+    cap_test.release();
 }
 
 bool testCamera() {
     cv::Mat frame;
     setOpencvDevice(device);
-    cap.open(device);
+    cap_test.open(device);
     // sleep(3);
-    if (!cap.isOpened()) {
+    if (!cap_test.isOpened()) {
         // std::cout << "Camera open failed!" << std::endl;
         setCameraStatus("Camera open failed!");
         return false;
     }
-    cap >> frame;
+    cap_test >> frame;
     if (frame.empty()) {
         // std::cout << "Camera read failed!" << std::endl;
         setCameraStatus("Camera read failed!");
         return false;
     }
     setCameraStatus("Camera Connected");
-    cap.release();
+    cap_test.release();
     return true;
 }

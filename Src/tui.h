@@ -16,8 +16,8 @@ void setDiscernStatus(std::string status);
 void setSerialStatus(std::string status);
 void setSerialBaudrate(std::string baudrate);
 void setSerialSend(int send_x, int send_y);
-
-// TODO:not string
-void setDiscernDirection(std::string direction);
+void setDiscernDirection(double x, double y, double r);
+void setTimeCost(double cost);
+void setSendDataPreview(const char *data , int length);
 
 #endif //TUI_H
