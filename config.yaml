@@ -1,0 +1,13 @@
+camera:
+    resolution: 1080
+    frame_rate: 30
+    device: /dev/video0
+    exposure: auto
+
+serial_port:
+    path: /dev/ttyS0
+    baudrate: 115200
+    stopbits: 1
+    bytesize: 8
+    parity: n
+    timeout: 0.1
