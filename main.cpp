@@ -5,6 +5,7 @@
 #include <filesystem>
 #include "config.h"
 #include "tui.h"
+#include <iostream>
 
 bool configFileExists(const std::string& filename = CONFIG_PATH) {
     return std::filesystem::exists(filename);

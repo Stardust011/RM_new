@@ -5,7 +5,9 @@
 #include "SerialPortCom.h"
 #include "config.h"
 #include <string>
-#include <unistd.h>
+#include <WzSerialPortPlus.h>
+#include <string>
+// #include <unistd.h>
 
 // 串口配置
 auto serial_port_path = config["serial_port"]["path"].as<std::string>();
@@ -21,7 +23,7 @@ serialData serical_data;
 // Init serial port
 bool serialInit() {
     // Init serial port
-    bool ret = serialPort.open(serial_port_path, serial_baudrate, serial_stopbits, serial_databits, serial_parity);
+    const bool ret = serialPort.open(serial_port_path, serial_baudrate, serial_stopbits, serial_databits, serial_parity);
     setSerialDevice(serial_port_path);
     setSerialBaudrate(std::to_string(serial_baudrate));
     // std::cout << "Serial port init: " << serial_port_path << " (" << serial_baudrate << ")" << std::endl;
@@ -31,14 +33,18 @@ bool serialInit() {
 }
 
 // crc16
-static unsigned short crc16(const unsigned char* data_p, unsigned char length){
-    unsigned char x;
+static unsigned short crc16(const unsigned char* data_p, const unsigned char length){
     unsigned short crc = 0xFFFF;
-
-    while (length--){
-        x = crc >> 8 ^ *data_p++;
-        x ^= x>>4;
-        crc = (crc << 8) ^ ((unsigned short)(x << 12)) ^ ((unsigned short)(x <<5)) ^ ((unsigned short)x);
+    for (unsigned char i = 0; i < length; i++) {
+        crc ^= static_cast<unsigned short>(data_p[i] << 8);
+        for (unsigned char j = 0; j < 8; j++) {
+            if (crc & 0x8000) {
+                constexpr unsigned short poly = 0x1021;
+                crc = (crc << 1) ^ poly;
+            } else {
+                crc = crc << 1;
+            }
+        }
     }
     return crc;
 }
@@ -52,18 +58,18 @@ void serialClose() {
 }
 
 // 通过函数修改数据
-void setSerialData(double x, double y) {
-    int x_2_send = (int)(x*100);
-    int y_2_send = (int)(y*100);
+void setSerialData(const double x, const double y) {
+    const int x_2_send = static_cast<int>(x * 10);
+    const int y_2_send = static_cast<int>(y * 10);
     serical_data.data.x = x_2_send;
     serical_data.data.y = y_2_send;
     // 设置状态
     setSerialSend(x_2_send,y_2_send);
-    serical_data.crc[0] = (unsigned char) (crc16((unsigned char *) &serical_data.data, sizeof(serical_data.data)) >> 8);
-    serical_data.crc[1] = (unsigned char) (crc16((unsigned char *) &serical_data.data, sizeof(serical_data.data)) & 0xFF);
+    serical_data.crc[0] = static_cast<unsigned char>(crc16(reinterpret_cast<unsigned char *>(&serical_data.data), sizeof(serical_data.data)) >> 8);
+    serical_data.crc[1] = static_cast<unsigned char>(crc16(reinterpret_cast<unsigned char *>(&serical_data.data), sizeof(serical_data.data)) & 0xFF);
 }
 
-void setCmdStatus(unsigned char cmd) {
+void setCmdStatus(const unsigned char cmd) {
     serical_data.cmd = cmd;
 }
 
@@ -72,9 +78,8 @@ void setCmdStatus(unsigned char cmd) {
     serialInit();
     // sleep(5);
     while (true) {
-        serialPort.send((char *) &serical_data, sizeof(serical_data));
-        // std::cout << "Serial port send: " << serical_data.data.x << " " << serical_data.data.y << std::endl;
         setSerialStatus("Sending...");
-        setSendDataPreview((char *) &serical_data, sizeof(serical_data));
+        setSendDataPreview(reinterpret_cast<char *>(&serical_data), sizeof(serical_data));
+        serialPort.send(reinterpret_cast<char *>(&serical_data), sizeof(serical_data));
     }
 }

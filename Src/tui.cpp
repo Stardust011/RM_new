@@ -51,7 +51,7 @@ void setSerialBaudrate(string baudrate) {
     serial_baudrate = std::move(baudrate);
 }
 
-void setSerialSend(int send_x, int send_y) {
+void setSerialSend(const int send_x, const int send_y) {
     // 转换为字符串,补足零为三位整数
     ostringstream out_x;
     out_x << fixed << setprecision(0) << setw(6)  << send_x;
@@ -71,14 +71,14 @@ void setDiscernDirection(double x, double y, double r) {
     discern_direction = "( x:" + out_x.str() + ", y:" + out_y.str() + ", r:" + out_r.str() + " )";
 }
 
-void setTimeCost(double cost) {
+void setTimeCost(const double cost) {
     // 转换为字符串,补足零为三位整数
     ostringstream out_cost;
     out_cost << fixed << setprecision(5) << setw(8)  << cost;
     time_cost = out_cost.str() + " s";
 }
 
-void setSendDataPreview(const char *data , int length) {
+void setSendDataPreview(const char *data , const int length) {
     // 转换为字符串,HEX显示
     ostringstream out_data;
     for (int i = 0; i < length; i++) {

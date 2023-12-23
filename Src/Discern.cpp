@@ -59,7 +59,7 @@ void findCircle(const cv::Mat& input) {
     int index = 0;
     for(int i = 0; i < circles.size(); i++)
     {
-        int x = cvRound(circles[i][0]);
+        const int x = cvRound(circles[i][0]);
         //        int y = cvRound(circles[i][1]);
         //        int r = cvRound(circles[i][2]);
         if(abs(x - input.cols / 2) < min)
@@ -77,17 +77,17 @@ void findCircle(const cv::Mat& input) {
 
 // 识别程序入口（多线程）
 [[noreturn]] void Discern_run() {
-    clock_t start,end;//定义clock_t变量
+    //定义clock_t变量
     while (true) {
-        start = clock();//开始时间
+        const clock_t start = clock();//开始时间
         cv::Mat frame = readFrame(cap);
         frame = preprocess(frame);
         findCircle(frame);
         // sleep(1);
         // setSerialData(i++, (double)2);
         // std::cout << "Discern_run" << std::endl;
-        end = clock();//结束时间
-        setTimeCost((double)(end-start)/CLOCKS_PER_SEC);
+        const clock_t end = clock();//结束时间
+        setTimeCost(static_cast<double>(end - start)/CLOCKS_PER_SEC);
         // std::cout << "Discern_run time: " << (double)(end-start)/CLOCKS_PER_SEC << std::endl;
     }
 }
