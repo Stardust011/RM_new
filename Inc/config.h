@@ -11,7 +11,7 @@
 #define DEVELOPE 1
 
 #ifdef DEVELOPE
-#define CONFIG_PATH "/mnt/g/project/RM_校内赛视觉/config.yaml"
+#define CONFIG_PATH "./config.yaml"
 #else
 #define CONFIG_PATH "config.yaml"
 #endif

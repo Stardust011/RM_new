@@ -5,6 +5,7 @@
 #include "Camera.h"
 
 #include <unistd.h>
+#include <variant>
 
 #include "config.h"
 #include <opencv4/opencv2/opencv.hpp>
@@ -12,13 +13,18 @@
 // auto resolution = config["camera"]["resolution"].as<int>();
 // auto frame_rate = config["camera"]["frame_rate"].as<int>();
 auto device = config["camera"]["device"].as<std::string>();
+
 auto exposure = config["camera"]["exposure"].as<std::string>();
 
 cv::VideoCapture cap_test;
 
 void Camera_Init() {
     // Open the camera device
-    cap_test.open(device);
+    if (std::all_of(device.begin(), device.end(), ::isdigit)) {
+        cap_test.open(std::stoi(device));
+    } else {
+        cap_test.open(device);
+    }
 
     // Set the camera parameters
     // cap.set(cv::CAP_PROP_FRAME_WIDTH, resolution);
@@ -37,7 +43,11 @@ void Camera_Init() {
 bool testCamera() {
     cv::Mat frame;
     setOpencvDevice(device);
-    cap_test.open(device);
+    if (std::all_of(device.begin(), device.end(), ::isdigit)) {
+        cap_test.open(std::stoi(device));
+    } else {
+        cap_test.open(device);
+    }
     // sleep(3);
     if (!cap_test.isOpened()) {
         // std::cout << "Camera open failed!" << std::endl;

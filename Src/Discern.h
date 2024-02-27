@@ -5,6 +5,6 @@
 #ifndef DISCERN_H
 #define DISCERN_H
 
-void Discern_run();
+[[noreturn]] void Discern_run();
 
 #endif //DISCERN_H

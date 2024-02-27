@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.26)
 project(RM)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -6,6 +6,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pthread")
 
 # opencv
 if (WIN32)
+    message(FATAL_ERROR "Can't build under Windows")
     set(OpenCV_DIR "H:\\opencv\\build\\install\\x64\\vc17\\lib")    # 设置opencv路径
 else ()
 endif ()

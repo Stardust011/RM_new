@@ -75,17 +75,53 @@ void findCircle(const cv::Mat& input) {
     setSerialData(x, y);
 }
 
+std::vector<cv::Point2f> findChessboardCorners(const cv::Mat& image, cv::Size boardSize) {
+    std::vector<cv::Point2f> corners;
+    bool found = cv::findChessboardCorners(image, boardSize, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_NORMALIZE_IMAGE + cv::CALIB_CB_FAST_CHECK);
+
+    if (found) {
+        // 如果找到了角点，我们可以使用cornerSubPix函数来提高角点的精度
+        cv::Mat gray;
+        cv::cvtColor(image, gray, cv::COLOR_BGR2GRAY);
+        cv::cornerSubPix(gray, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1));
+    }
+
+    return corners;
+}
+
+cv::Point2f findChessboardCenter(const std::vector<cv::Point2f>& corners) {
+    cv::Point2f center(0, 0);
+    for (const auto& corner : corners) {
+        center += corner;
+    }
+    center /= static_cast<float>(corners.size());
+    return center;
+}
+
 // 识别程序入口（多线程）
 [[noreturn]] void Discern_run() {
-    //定义clock_t变量
     while (true) {
+        //定义clock_t变量
         const clock_t start = clock();//开始时间
         cv::Mat frame = readFrame(cap);
-        frame = preprocess(frame);
-        findCircle(frame);
+        // frame = preprocess(frame);
+        // findCircle(frame);
         // sleep(1);
         // setSerialData(i++, (double)2);
         // std::cout << "Discern_run" << std::endl;
+        cv::Size boardSize = cv::Size(9, 6);
+        std::vector<cv::Point2f> corners = findChessboardCorners(frame, boardSize);
+        if (corners.size() == boardSize.area()) {
+            cv::Point2f center = findChessboardCenter(corners);
+            setSerialData(center.x-frame.cols/2, center.y-frame.rows/2);
+            setDiscernDirection(center.x, center.y, 0);
+            setDiscernStatus("Chessboard found");
+            setCmdStatus(1);
+        } else {
+            setDiscernStatus("Chessboard not found");
+            setCmdStatus(0);
+        }
+
         const clock_t end = clock();//结束时间
         setTimeCost(static_cast<double>(end - start)/CLOCKS_PER_SEC);
         // std::cout << "Discern_run time: " << (double)(end-start)/CLOCKS_PER_SEC << std::endl;

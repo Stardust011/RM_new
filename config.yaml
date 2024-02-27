@@ -1,7 +1,7 @@
 camera:
     resolution: 1080
     frame_rate: 30
-    device: ../Video/test.mp4
+    device: 0
     exposure: auto
 
 serial_port:

@@ -7,7 +7,7 @@
 
 #include <string>
 
-void displayStatus();
+[[noreturn]] void displayStatus();
 void setOpencvDevice(std::string device);
 void setCameraExposure(std::string exposure);
 void setSerialDevice(std::string device);

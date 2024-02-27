@@ -105,7 +105,6 @@ void setSendDataPreview(const char *data , const int length) {
 
     while (true) {
         // 在窗口中显示一些文本
-
         // 分割线上方
         // 摄像头地址
         mvprintw(1, 1, ("Opencv device: " + opencv_device).c_str());
@@ -151,10 +150,4 @@ void setSendDataPreview(const char *data , const int length) {
         // 每10毫秒刷新一次
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-
-    // 等待用户输入
-    getch();
-
-    // 删除窗口并结束ncurses
-    endwin();
 }

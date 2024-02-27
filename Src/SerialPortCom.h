@@ -27,6 +27,6 @@ struct serialData {
 
 void setCmdStatus(unsigned char cmd);
 void setSerialData(double x, double y);
-void serialSendEntry();
+[[noreturn]] void serialSendEntry();
 
 #endif //SERIALPORTCOM_H
