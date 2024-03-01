@@ -1,7 +1,7 @@
 //
 // Created by Stardust on 2023/12/21.
 //
-
+#pragma once
 #ifndef TUI_H
 #define TUI_H
 
@@ -16,7 +16,7 @@ void setDiscernStatus(std::string status);
 void setSerialStatus(std::string status);
 void setSerialBaudrate(std::string baudrate);
 void setSerialSend(int send_x, int send_y);
-void setDiscernDirection(double x, double y, double r);
+void setDiscernDirection(double x, double y);
 void setTimeCost(double cost);
 void setSendDataPreview(const char *data , int length);
 

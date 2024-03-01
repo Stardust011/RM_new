@@ -11,3 +11,11 @@ serial_port:
     bytesize: 8
     parity: n
     timeout: 0.1
+
+thread:
+    frame: 1
+    discern: 1
+    queue_size: 5
+
+# armour color [0:red 1:blue]
+armour_color: 1

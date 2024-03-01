@@ -18,4 +18,6 @@
 
 inline YAML::Node config = YAML::LoadFile(CONFIG_PATH);
 
+#define DEBUG_MOD true
+
 #endif //CONFIG_H

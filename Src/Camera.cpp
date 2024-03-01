@@ -3,12 +3,9 @@
 //
 
 #include "Camera.h"
-
-#include <unistd.h>
-#include <variant>
-
 #include "config.h"
-#include <opencv4/opencv2/opencv.hpp>
+
+
 
 // auto resolution = config["camera"]["resolution"].as<int>();
 // auto frame_rate = config["camera"]["frame_rate"].as<int>();

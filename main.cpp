@@ -34,15 +34,13 @@ int main()
 {
     precheck();
     std::thread thread1(displayStatus);
-    testCamera();
-    Camera_Init();
     std::thread thread2(serialSendEntry);
-    // std::thread thread3(Discern_run);
+    std::thread thread3(Discern_run);
     //
     // 确保在程序结束前等待线程完成
     thread1.join();
     thread2.join();
-    // thread3.join();
+    thread3.join();
 
     return 0;
 }

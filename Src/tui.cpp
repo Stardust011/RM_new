@@ -60,22 +60,24 @@ void setSerialSend(const int send_x, const int send_y) {
     serial_send = "( x:" + out_x.str() + ", y:" + out_y.str() + " )";
 }
 
-void setDiscernDirection(double x, double y, double r) {
+void setDiscernDirection(double x, double y) {
     // 转换为字符串,补足零为三位整数
     ostringstream out_x;
     out_x << fixed << setprecision(3) << setw(8)  << x;
     ostringstream out_y;
     out_y << fixed << setprecision(3) << setw(8)  << y;
-    ostringstream out_r;
-    out_r << fixed << setprecision(3) << setw(8)  << r;
-    discern_direction = "( x:" + out_x.str() + ", y:" + out_y.str() + ", r:" + out_r.str() + " )";
+
+    discern_direction = "( x:" + out_x.str() + ", y:" + out_y.str() + " )";
 }
 
 void setTimeCost(const double cost) {
     // 转换为字符串,补足零为三位整数
     ostringstream out_cost;
     out_cost << fixed << setprecision(5) << setw(8)  << cost;
-    time_cost = out_cost.str() + " s";
+    // 计算FPS
+    ostringstream out_fps;
+    out_fps << fixed << setprecision(2) << setw(8)  << 1/cost;
+    time_cost = out_cost.str() + " s | FPS: " + out_fps.str();
 }
 
 void setSendDataPreview(const char *data , const int length) {
@@ -107,41 +109,28 @@ void setSendDataPreview(const char *data , const int length) {
         // 在窗口中显示一些文本
         // 分割线上方
         // 摄像头地址
-        mvprintw(1, 1, ("Opencv device: " + opencv_device).c_str());
-        // 摄像头状态
-        // 清除上一次的内容
+        mvprintw(1, 1, "Opencv device: %s", opencv_device.c_str());
         move(2,1);
         clrtoeol();
-        mvprintw(2, 1, ("Camera status: " + camera_status).c_str());
-        // 摄像头曝光度
+        mvprintw(2, 1, "Camera status: %s", camera_status.c_str());
         move(3,1);
         clrtoeol();
-        mvprintw(3, 1, ("Camera exposure: " + camera_exposure).c_str());
-        // 识别状态
+        mvprintw(3, 1, "Camera exposure: %s", camera_exposure.c_str());
         move(4,1);
         clrtoeol();
-        mvprintw(4, 1, ("Discern status: " + discern_status).c_str());
-        // 识别方位
-        mvprintw(5, 1, ("Discern direction: " + discern_direction).c_str());
-        // 耗时
-        mvprintw(6, 1, ("Time cost: " + time_cost).c_str());
+        mvprintw(4, 1, "Discern status: %s", discern_status.c_str());
+        mvprintw(5, 1, "Discern direction: %s", discern_direction.c_str());
+        mvprintw(6, 1, "Time cost: %s", time_cost.c_str());
 
-        // 分割线下方
-        // 串口地址
-        mvprintw(half_height+1, 1, ("Serial Port device: " + serial_device).c_str());
-        // 串口波特率
-        // 清除上一次的内容
+        mvprintw(half_height+1, 1, "Serial Port device: %s", serial_device.c_str());
         move(half_height+2,1);
         clrtoeol();
-        mvprintw(half_height+2, 1, ("Serial Port baudrate: " + serial_baudrate).c_str());
-        // 串口状态
-        mvprintw(half_height+3, 1, ("Serial Port status: " + serial_status).c_str());
-        // 串口发送数据
-        mvprintw(half_height+4, 1, ("Serial Port send: " + serial_send).c_str());
-        // 数据预览
+        mvprintw(half_height+2, 1, "Serial Port baudrate: %s", serial_baudrate.c_str());
+        mvprintw(half_height+3, 1, "Serial Port status: %s", serial_status.c_str());
+        mvprintw(half_height+4, 1, "Serial Port send: %s", serial_send.c_str());
         move(half_height+5,1);
         clrtoeol();
-        mvprintw(half_height+5, 1, ("Data preview: " + send_data_preview).c_str());
+        mvprintw(half_height+5, 1, "Data preview: %s", send_data_preview.c_str());
 
         // 最后两行
         // 按键提示

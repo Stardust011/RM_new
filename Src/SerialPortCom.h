@@ -1,7 +1,7 @@
 //
 // Created by Stardust on 2023/12/17.
 //
-
+#pragma once
 #ifndef SERIALPORTCOM_H
 #define SERIALPORTCOM_H
 
@@ -9,6 +9,12 @@ bool serialInit();
 static unsigned short crc16(const unsigned char* data_p, unsigned char length);
 bool serialSend(const char *data, int length);
 void serialClose();
+
+enum status_cmd{
+    NOT_FIND,
+    FIND,
+    GUESS
+};
 
 
 struct pos_data {
@@ -25,7 +31,7 @@ struct serialData {
     unsigned char end[2]{0x0D, 0x0A};  // 帧尾
 };
 
-void setCmdStatus(unsigned char cmd);
+void setCmdStatus(int status);
 void setSerialData(double x, double y);
 [[noreturn]] void serialSendEntry();
 

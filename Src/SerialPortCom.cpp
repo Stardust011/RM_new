@@ -57,28 +57,46 @@ void serialClose() {
     serialPort.close();
 }
 
-// 通过函数修改数据
+// 修改将要发送的数据，并在tui中显示
 void setSerialData(const double x, const double y) {
     const int x_2_send = static_cast<int>(x * 10);
     const int y_2_send = static_cast<int>(y * 10);
     serical_data.data.x = x_2_send;
     serical_data.data.y = y_2_send;
     // 设置状态
+    setDiscernStatus("Find!");
     setSerialSend(x_2_send,y_2_send);
     serical_data.crc[0] = static_cast<unsigned char>(crc16(reinterpret_cast<unsigned char *>(&serical_data.data), sizeof(serical_data.data)) >> 8);
     serical_data.crc[1] = static_cast<unsigned char>(crc16(reinterpret_cast<unsigned char *>(&serical_data.data), sizeof(serical_data.data)) & 0xFF);
 }
 
-void setCmdStatus(const unsigned char cmd) {
-    serical_data.cmd = cmd;
+void setCmdStatus(const int status) {
+    switch (status) {
+        case NOT_FIND:
+            setDiscernStatus("Not Find...");
+            serical_data.cmd = 0x00;
+            break;
+        case FIND:
+            setDiscernStatus("Find!");
+            serical_data.cmd = 0x01;
+            break;
+        case GUESS:
+            setDiscernStatus("Not Find but Guessing");
+            serical_data.cmd = 0x02;
+            break;
+        default:
+            setDiscernStatus("ERROR status");
+            serical_data.cmd = 0x1F;
+    }
 }
+
 
 // 串口发送函数入口（多线程）
 [[noreturn]] void serialSendEntry() {
     serialInit();
     // sleep(5);
+    setSerialStatus("Sending...");
     while (true) {
-        setSerialStatus("Sending...");
         setSendDataPreview(reinterpret_cast<char *>(&serical_data), sizeof(serical_data));
         serialPort.send(reinterpret_cast<char *>(&serical_data), sizeof(serical_data));
     }
