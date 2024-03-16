@@ -5,6 +5,7 @@
 #include "Discern.h"
 
 #include <thread>
+#include <stack>
 
 #include "Camera.h"
 #include "config.h"
@@ -21,13 +22,14 @@ const auto armour_color = config["armour_color"].as<int>();
 // auto discern_thread_number = 2;
 
 std::mutex g_mutex;
-std::queue<Mat> frames;//先进先出队列
+std::stack<Mat> frames; //stack
+//std::queue<Mat> frames;//先进先出队列
 
 // 赋予识别位置初值
 auto prev_point_fire = Point(0, 0);
 auto prev_distance = 0.0;
 
-double distance_single = 0;
+double distance_z = 0;
 auto target_flags = false;
 
 
@@ -48,9 +50,11 @@ void Camera_Open() {
 void readFrame(VideoCapture cap)
 {
     // 保持frames队列的大小不超过queue_size
-    while(frames.size()>=queue_size) {
+    if (frames.size()>=queue_size) {
         g_mutex.lock();//修改公共资源，用进程锁锁定
-        frames.pop();
+        std::stack<Mat> temp;
+        temp.push(frames.top());
+        frames.swap(temp);
         g_mutex.unlock();
     };
     Mat frame2;
@@ -96,10 +100,10 @@ Rect get_roi_rect(bool new_flags) {
 
     // 根据距离设置ROI宽度
     int Roi_width;
-    if (distance_single < 0.5)
+    if (distance_z < 0.5)
         Roi_width = 280;
     else
-        Roi_width = Polyfit_Get(distance_single) + 20;
+        Roi_width = Polyfit_Get(distance_z) + 20;
     // 默认高度
     int Roi_height = 150;
     roi_rect.x = 320 - Roi_width / 2.0;
@@ -562,7 +566,7 @@ void move_Point(const Rect normal_rect, std::vector<Rect> &point_rect) {
 //         prev_point = tmp_point;
 //         prev_rect = vector_rect[tmp_index];
 //         rectangle(src_image, vector_rect[tmp_index], Scalar(0, 0, 255), 2, 8);
-//         distance_single = CalculateZ(0, vector_rect[tmp_index].height, 60, focus_global);
+//         distance_z = CalculateZ(0, vector_rect[tmp_index].height, 60, focus_global);
 //         return tmp_point;
 //     }
 //     vector<double> distance;
@@ -612,7 +616,7 @@ void move_Point(const Rect normal_rect, std::vector<Rect> &point_rect) {
 //                     prev_point = Point(vector_rect[min_index].x +vector_rect[min_index].width / 2.0,vector_rect[min_index].y + vector_rect[min_index].height/2.0);
 //                     prev_rect = vector_rect[min_index];
 //                 }
-//                 distance_single = CalculateZ(0,prev_rect.height,60,focus_global);
+//                 distance_z = CalculateZ(0,prev_rect.height,60,focus_global);
 //                 return prev_point;
 //             }*/
 //         distance_times = 0;
@@ -623,7 +627,7 @@ void move_Point(const Rect normal_rect, std::vector<Rect> &point_rect) {
 //                            vector_rect[min_index].y + vector_rect[min_index].height /
 //                                                       2.0 /*+ (vector_rect[min_index].y + vector_rect[min_index].height / 2.0 - prev_point.y)*/);
 //         //prev_point = Point(sort_rect[0].x + sort_rect[0].width / 2.0,sort_rect[0].y + sort_rect[0].height / 2.0);
-//         distance_single = CalculateZ(0, vector_rect[min_index].height, 60, focus_global);
+//         distance_z = CalculateZ(0, vector_rect[min_index].height, 60, focus_global);
 //         return prev_point;
 //     }
 //     register int min_index;
@@ -659,7 +663,7 @@ void move_Point(const Rect normal_rect, std::vector<Rect> &point_rect) {
 //             prev_point = Point(sort_rect[min_index].x + sort_rect[min_index].width / 2.0,
 //                                sort_rect[min_index].y + sort_rect[min_index].height / 2.0);
 //         }
-//         distance_single = CalculateZ(0, prev_rect.height, 60, focus_global);
+//         distance_z = CalculateZ(0, prev_rect.height, 60, focus_global);
 //         return prev_point;
 //     }
 //     distance_times = 0;
@@ -668,7 +672,7 @@ void move_Point(const Rect normal_rect, std::vector<Rect> &point_rect) {
 //                        sort_rect[min_index].y + sort_rect[min_index].height /
 //                                                 2.0 /*+ (sort_rect[min_index].y + sort_rect[min_index].height / 2.0 - prev_point.y)*/);
 //     prev_rect = sort_rect[min_index];
-//     distance_single = CalculateZ(0, sort_rect[min_index].height, 60, focus_global);
+//     distance_z = CalculateZ(0, sort_rect[min_index].height, 60, focus_global);
 //     //cout << "area: " << min_area << endl;
 //
 //     //return prev_point
@@ -679,16 +683,19 @@ void move_Point(const Rect normal_rect, std::vector<Rect> &point_rect) {
 //     //return prev_point;
 // }
 
+// 尝试注释
 double im_real_weights = 0;
 int real_distance_height = 60; // 不确定参数含义，可能可以优化为常量
 // 计算并返回物体在三维空间中的Z轴距离。
-// 根据两个数字坐标、实际距离和焦距来计算物体在三维空间中的Z轴距离。
+// 根据数字坐标、实际坐标来计算物体在三维空间中的Z轴距离。
 double CalculateZ(const float Digital_First_X, const float Digital_Second_X, const float Real_Distance, const double focus) {
     const float Image_W = Digital_Second_X - Digital_First_X;
     im_real_weights = static_cast<double>(real_distance_height) / Image_W;
     const double Disitance = focus * Real_Distance / Image_W;
     return Disitance;
 }
+
+
 
 
 // 冒泡排序
@@ -741,8 +748,8 @@ Point select_the_rect(Mat &src_image, std::vector<Rect> &vector_rect, int &retur
         if (no_target <= 1) // 返回上一次选择的矩形的面积、中心点和矩形
             {
             return_area = prev_rect.area();
-            // 修改全局变量distance_single
-            distance_single = CalculateZ(0, static_cast<float>(prev_rect.height), 60, focus_global);
+            // 修改全局变量distance_z
+            distance_z = CalculateZ(0, static_cast<float>(prev_rect.height), 60, focus_global);
             return_rect = prev_rect;
             return prev_point;
         }
@@ -787,7 +794,7 @@ Point select_the_rect(Mat &src_image, std::vector<Rect> &vector_rect, int &retur
         prev_point = tmp_point;
         prev_rect = vector_rect[tmp_index];
         if constexpr (DEBUG_MOD) rectangle(src_image, vector_rect[tmp_index], Scalar(0, 0, 255), 2, 8);
-        distance_single = CalculateZ(0, vector_rect[tmp_index].height, 60, focus_global);
+        distance_z = CalculateZ(0, vector_rect[tmp_index].height, 60, focus_global);
         return_area = prev_rect.area();
         return_rect = prev_rect;
         return tmp_point;
@@ -835,7 +842,8 @@ Point select_the_rect(Mat &src_image, std::vector<Rect> &vector_rect, int &retur
                            vector_rect[min_index].y + vector_rect[min_index].height /
                                                       2.0 /*+ (vector_rect[min_index].y + vector_rect[min_index].height / 2.0 - prev_point.y)*/);
         //prev_point = Point(sort_rect[0].x + sort_rect[0].width / 2.0,sort_rect[0].y + sort_rect[0].height / 2.0);
-        distance_single = CalculateZ(0, vector_rect[min_index].height, 60, focus_global);
+        // 距离
+        distance_z = CalculateZ(0, vector_rect[min_index].height, 60, focus_global);
         return_area = prev_rect.area();
         return_rect = prev_rect;
         return prev_point;
@@ -876,8 +884,8 @@ Point select_the_rect(Mat &src_image, std::vector<Rect> &vector_rect, int &retur
                                sort_rect[min_index].y + sort_rect[min_index].height / 2.0);
             prev_rect = sort_rect[min_index];
         }
-        distance_single = CalculateZ(0, prev_rect.height, 60, focus_global);
-        //	distance_single = CalculateZ(prev_rect);
+        distance_z = CalculateZ(0, prev_rect.height, 60, focus_global);
+        //	distance_z = CalculateZ(prev_rect);
         return_area = prev_rect.area();
         return_rect = prev_rect;
         return prev_point;
@@ -890,7 +898,7 @@ Point select_the_rect(Mat &src_image, std::vector<Rect> &vector_rect, int &retur
                        sort_rect[min_index].y + sort_rect[min_index].height /
                                                 2.0 /*+ (sort_rect[min_index].y + sort_rect[min_index].height / 2.0 - prev_point.y)*/);
     prev_rect = sort_rect[min_index];
-    distance_single = CalculateZ(0, sort_rect[min_index].height, 60, focus_global);
+    distance_z = CalculateZ(0, sort_rect[min_index].height, 60, focus_global);
     return_area = prev_rect.area();
     return_rect = prev_rect;
     return prev_point;
@@ -901,13 +909,13 @@ Point select_the_rect(Mat &src_image, std::vector<Rect> &vector_rect, int &retur
 void discermArmour() {
     // 定义clock_t变量
     const clock_t start = clock();//开始时间
-    // 从队列中取出帧，如果没有帧就直接返回
+    // 取出帧，如果没有帧就直接返回
     g_mutex.lock();
     if (frames.empty()) {
         g_mutex.unlock();
         return;
     }
-    Mat frame = frames.front();
+    Mat frame = frames.top();
     frames.pop();
     g_mutex.unlock();
     // showFrame(frame);

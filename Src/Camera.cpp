@@ -15,6 +15,7 @@ auto exposure = config["camera"]["exposure"].as<std::string>();
 
 cv::VideoCapture cap_test;
 
+// 相机初始化
 void Camera_Init() {
     // Open the camera device
     if (std::all_of(device.begin(), device.end(), ::isdigit)) {

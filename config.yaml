@@ -15,7 +15,7 @@ serial_port:
 thread:
     frame: 1
     discern: 1
-    queue_size: 5
+    queue_size: 50
 
 # armour color [0:red 1:blue]
 armour_color: 1
